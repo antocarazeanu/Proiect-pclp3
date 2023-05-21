@@ -1,197 +1,207 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-// Definirea structurii pentru stivă
-typedef struct {
-    int top;
-    unsigned char* array;
-} Stack;
-
-// Funcția pentru crearea unei stive noi
-Stack* createStack(int size) {
-    Stack* stack = (Stack*)malloc(sizeof(Stack));
-    stack->top = -1;
-    stack->array = (unsigned char*)malloc(size * sizeof(unsigned char));
-    return stack;
-}
-
-// Funcția pentru verificarea dacă stiva este goală
-int isStackEmpty(Stack* stack) {
-    return stack->top == -1;
-}
-
-// Funcția pentru adăugarea unui element în vârful stivei
-void push(Stack* stack, unsigned char item) {
-    stack->array[++stack->top] = item;
-}
-
-// Funcția pentru eliminarea și returnarea elementului din vârful stivei
-unsigned char pop(Stack* stack) {
-    if (isStackEmpty(stack))
-        return '\0';
-    return stack->array[stack->top--];
-}
-
-// Definirea structurii pentru coadă
-typedef struct {
-    int front, rear, size;
-    unsigned char* array;
-} Queue;
-
-// Funcția pentru crearea unei cozi noi
-Queue* createQueue(int size) {
-    Queue* queue = (Queue*)malloc(sizeof(Queue));
-    queue->front = queue->size = 0;
-    queue->rear = size - 1;
-    queue->array = (unsigned char*)malloc(size * sizeof(unsigned char));
-    return queue;
-}
-
-// Funcția pentru verificarea dacă coada este plină
-int isQueueFull(Queue* queue) {
-    return queue->size == 8;
-}
-
-// Funcția pentru verificarea dacă coada este goală
-int isQueueEmpty(Queue* queue) {
-    return queue->size == 0;
-}
-
-// Funcția pentru adăugarea unui element în coadă
-void enqueue(Queue* queue, unsigned char item) {
-    if (isQueueFull(queue))
-        return;
-    queue->rear = (queue->rear + 1) % 8;
-    queue->array[queue->rear] = item;
-    queue->size++;
-}
-
-// Funcția pentru eliminarea și returnarea elementului din coadă
-unsigned char dequeue(Queue* queue) {
-    if (isQueueEmpty(queue))
-        return '\0';
-    unsigned char item = queue->array[queue->front];
-    queue->front = (queue->front + 1) % 8;
-    queue->size--;
-    return item;
-}
-
-// Funcția pentru adunarea a doi biți
-unsigned char addBits(unsigned char bit1, unsigned char bit2, unsigned char* carry) {
-    unsigned char sum = bit1 ^ bit2;
-    *carry = bit1 & bit2;
-    return sum;
-}
-
-// Funcția pentru scăderea a doi biți
-unsigned char subtractBits(unsigned char bit1, unsigned char bit2, unsigned char* borrow) {
-    unsigned char diff = bit1 ^ bit2;
-    *borrow = (~bit1) & bit2;
-    return diff;
-}
-
-// Funcția pentru realizarea unei operații de înmulțire (adunare repetată)
-unsigned int multiply(unsigned int number1, unsigned int number2) {
-    unsigned int result = 0;
-    while (number2 > 0) {
-        if (number2 & 1)
-            result += number1;
-        number1 <<= 1;
-        number2 >>= 1;
+// cu aceasta functe se transforma numarul in binar
+void tr_binar(unsigned int num, int n, int biti[], int *marime_biti)
+{
+    int i, j = 0;
+    for (i = powf(2, n * 6 + 4); i > 0; i = i / 2)
+    {
+        if (num & i)
+        {
+            biti[j] = 1;
+            j++;
+        }
+        else
+        {
+            biti[j] = 0;
+            j++;
+        }
     }
-    return result;
+    *marime_biti = j;
 }
 
-// Funcția pentru realizarea unei operații de împărțire (scădere repetată)
-unsigned int divide(unsigned int dividend, unsigned int divisor) {
-    unsigned int quotient = 0;
-    while (dividend >= divisor) {
-        dividend -= divisor;
-        quotient++;
+// cu aceasta functie se transforma in baza 10
+int tr_b10(int vector[], int n)
+{
+    int i, b10 = 0, j = n;
+    for (i = n; i > 0; i--)
+    {
+        b10 = b10 + vector[i] * powf(2, n - j);
+        j--;
     }
-    return quotient;
+    return b10;
 }
 
-// Funcția principală
-int main() {
-    unsigned int number1, number2;
-
-    printf("Introduceți primul număr natural: ");
-    scanf("%u", &number1);
-
-    printf("Introduceți al doilea număr natural: ");
-    scanf("%u", &number2);
-
-    // Convertirea numerelor în reprezentarea binară
-    unsigned char bits1[32];
-    unsigned char bits2[32];
-    for (int i = 0; i < 32; i++) {
-        bits1[i] = number1 % 2;
-        bits2[i] = number2 % 2;
-        number1 >>= 1;
-        number2 >>= 1;
+// functie pentru adunare
+int adunare(int nr1[], int nr2[])
+{
+    unsigned int a = tr_b10(nr1, 4), b = tr_b10(nr2, 4), c;
+    while (b)
+    {
+        c = a & b;
+        a = a ^ b;
+        b = c << 1;
     }
+    // se returneaza valoarea modificata a lui nr1(a), in baza 10
+    return a;
+}
 
-    Stack* stack = createStack(32);
-    Queue* queue = createQueue(32);
-
-    // Adăugarea bitilor în stivă și coadă
-    for (int i = 31; i >= 0; i--) {
-        push(stack, bits1[i]);
-        push(stack, bits2[i]);
-        enqueue(queue, bits1[i]);
-        enqueue(queue, bits2[i]);
+// functie pentru xor
+int xor (int nr1[], int nr2[]) {
+    unsigned int a = tr_b10(nr1, 4), b = tr_b10(nr2, 4);
+    int i, j = 0;
+    for (i = powf(2, 4); i > 0; i = i / 2)
+    {
+        if ((a & i) && (b & i))
+        {
+            nr1[j] = 0;
+            j++;
+        }
+        else if (!(a & i) && !(b & i))
+        {
+            nr1[j] = 0;
+            j++;
+        }
+        else
+        {
+            nr1[j] = 1;
+            j++;
+        }
     }
+    // se returneaza noua valoare a nr1 in baza 10
+    a = tr_b10(nr1, 4);
+    return a;
+}
 
-    // Adunare
-    unsigned char carry = 0;
-    unsigned char sumBits[32];
-    for (int i = 0; i < 32; i++) {
-        unsigned char bit1 = pop(stack);
-        unsigned char bit2 = pop(stack);
-        unsigned char sum = addBits(bit1, bit2, &carry);
-        sumBits[i] = sum;
-        enqueue(queue, sum);
+    // functie pentru interschimbare
+    int interchimbare(int nr1[], int nr2[])
+{
+    int part1[3], part2[3], aux;
+    unsigned p1, p2;
+    part1[1] = nr2[1];
+    part1[2] = nr2[2];
+    part2[1] = nr2[3];
+    part2[2] = nr2[4];
+    p1 = tr_b10(part1, 2) + 1;
+    p2 = tr_b10(part2, 2) + 1;
+    aux = nr1[p2];
+    nr1[p2] = nr1[p1];
+    nr1[p1] = aux;
+    // se returneaza noua valoare a nr1 in baza 10
+    return tr_b10(nr1, 4);
+}
+
+// functie pentru rotirea la stanga
+int rotire_st(int nr1[], int nr2[])
+{
+    unsigned int a, b = tr_b10(nr2, 4);
+    int i, j, aux;
+    // se rotesc la stanga elementele vectorului de b ori
+    for (i = 0; i < b; i++)
+    {
+        for (j = 1; j <= 3; j++)
+        {
+            aux = nr1[j];
+            nr1[j] = nr1[j + 1];
+            nr1[j + 1] = aux;
+        }
     }
-    unsigned int sum = 0;
-    for (int i = 31; i >= 0; i--) {
-        sum <<= 1;
-        sum |= sumBits[i];
+    // se returneaza noua valoare a nr1 in baza 10
+    a = tr_b10(nr1, 4);
+    return a;
+}
+
+int main()
+{
+    // vector de functii care pointeaza la fiecare functie a calculatorului
+    int (*functii[5])(int *, int *) = {adunare, xor, interchimbare, rotire_st};
+    int n, *biti, marime_biti, i, *nr1, *op, *nr2, j, *rez, operatii = 0, k;
+    unsigned int m, rezultat;
+    scanf("%d", &n);
+    scanf("%d", &m);
+    // se aloca memorie pentru vectorul biti si nr1
+    biti = (int *)malloc(sizeof(int) * 30);
+    nr1 = (int *)malloc(sizeof(int) * 5);
+    // se creaza vectorul de biti iar nr1 ia valorile primilor 4 biti din
+    // acest vector
+    tr_binar(m, n, biti, &marime_biti);
+    for (i = 1; i <= 4; i++)
+        nr1[i] = biti[i];
+    // daca nu trebuie efectuata nicio operatie se afiseaza direct nr1
+    // in baza 10
+    if (n == 0)
+    {
+        rezultat = tr_b10(nr1, 4);
+        printf("%d", rezultat);
     }
-
-    // Scădere
-    unsigned char borrow = 0;
-    unsigned char diffBits[32];
-    for (int i = 0; i < 32; i++) {
-        unsigned char bit1 = dequeue(queue);
-        unsigned char bit2 = dequeue(queue);
-        unsigned char diff = subtractBits(bit1, bit2, &borrow);
-        diffBits[i] = diff;
-        push(stack, diff);
+    // daca nr de operatii este > 0 atunci se parcurge vectorul de biti pana
+    // cand nr de operatii este satisfacut sau pana la finalul acestuia
+    else
+    {
+        i = 5;
+        // se aloca memorie pentru vectorii op, nr2 si rez
+        op = (int *)malloc(sizeof(int) * 3);
+        nr2 = (int *)malloc(sizeof(int) * 5);
+        rez = (int *)malloc(sizeof(int) * 5);
+        while (i <= marime_biti && operatii < n)
+        {
+            // se actualizeaza operatia si nr2
+            op[1] = biti[i];
+            op[2] = biti[i + 1];
+            i = i + 2;
+            for (j = 1; j <= 4; j++)
+                nr2[j] = biti[i + j - 1];
+            i = i + 4;
+            operatii++;
+            // daca operatia este de tip 00 se apeleaza functia adunare apoi
+            // nr1 devine rezultatul binar dupa apelarea functiei
+            if (tr_b10(op, 2) == 0)
+            {
+                rezultat = functii[0](nr1, nr2);
+                tr_binar(rezultat, 0, rez, &j);
+                for (k = 1; k <= 4; k++)
+                    nr1[k] = rez[k];
+            }
+            // daca operatia este de tip 01 se apeleaza functia interchimbare
+            // apoi nr1 devine rezultatul binar dupa apelarea functiei
+            else if (tr_b10(op, 2) == 1)
+            {
+                rezultat = functii[2](nr1, nr2);
+                tr_binar(rezultat, 0, rez, &j);
+                for (k = 1; k <= 4; k++)
+                    nr1[k] = rez[k];
+            }
+            // daca operatia este de tip 10 se apeleaza functia de rotire la
+            // stanga apoi nr1 devine rezultatul binar dupa apelarea functiei
+            else if (tr_b10(op, 2) == 2)
+            {
+                rezultat = functii[3](nr1, nr2);
+                tr_binar(rezultat, 0, rez, &j);
+                for (k = 1; k <= 4; k++)
+                    nr1[k] = rez[k];
+            }
+            // daca operatia este de tip 11 se apeleaza functia xor apoi
+            // nr1 devine rezultatul binar dupa apelarea functiei
+            else if (tr_b10(op, 2) == 3)
+            {
+                rezultat = functii[1](nr1, nr2);
+                tr_binar(rezultat, 0, rez, &j);
+                for (k = 1; k <= 4; k++)
+                    nr1[k] = rez[k];
+            }
+        }
+        // rezultatul este transformat in baza 10 si apoi afisat
+        rezultat = tr_b10(nr1, 4);
+        printf("%d\n", rezultat);
+        // se elibereaza memoria alocata pentru vectorii op, nr2 si rez
+        free(op);
+        free(nr2);
+        free(rez);
     }
-    unsigned int diff = 0;
-    for (int i = 31; i >= 0; i--) {
-        diff <<= 1;
-        diff |= diffBits[i];
-    }
-
-    // Înmulțire
-    unsigned int product = multiply(number1, number2);
-
-    // Împărțire
-    unsigned int quotient = divide(number1, number2);
-
-    printf("Rezultatele operațiilor:\n");
-    printf("Adunare: %u\n", sum);
-    printf("Scădere: %u\n", diff);
-    printf("Înmulțire: %u\n", product);
-    printf("Împărțire: %u\n", quotient);
-
-    // Eliberarea memoriei
-    free(stack->array);
-    free(stack);
-    free(queue->array);
-    free(queue);
-
+    // se elibereaza memoria alocata pentru vectorii biti si nr1
+    free(biti);
+    free(nr1);
     return 0;
 }
