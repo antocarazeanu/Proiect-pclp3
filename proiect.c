@@ -2,6 +2,142 @@
 #include <stdlib.h>
 #include <math.h>
 
+// Structura pentru un nod al cozii
+typedef struct Node
+{
+    int data;
+    struct Node *next;
+} Node;
+
+// Structura pentru coadă
+typedef struct Queue
+{
+    Node *front;  // Referință către primul element din coadă
+    Node *rear;   // Referință către ultimul element din coadă
+    int size;     // Dimensiunea cozii (numărul de elemente)
+    int capacity; // Capacitatea maximă a cozii
+} Queue;
+
+// Funcția pentru crearea unei cozi goale
+Queue *createQueue(int capacity)
+{
+    Queue *queue = (Queue *)malloc(sizeof(Queue));
+    queue->front = NULL;
+    queue->rear = NULL;
+    queue->size = 0;
+    queue->capacity = capacity;
+    return queue;
+}
+
+// Funcția pentru verificarea dacă coada este goală
+int isEmpty(Queue *queue)
+{
+    return (queue->size == 0);
+}
+
+// Funcția pentru verificarea dacă coada este plină
+int isFull(Queue *queue)
+{
+    return (queue->size == queue->capacity);
+}
+
+// Funcția pentru adăugarea unui element la sfârșitul cozii
+void enqueue(Queue *queue, int data)
+{
+    if (isFull(queue))
+    {
+        printf("Coada este plina. Nu se poate adauga elementul %d.\n", data);
+        return;
+    }
+
+    Node *newNode = (Node *)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->next = NULL;
+
+    if (isEmpty(queue))
+    {
+        queue->front = newNode;
+        queue->rear = newNode;
+    }
+    else
+    {
+        queue->rear->next = newNode;
+        queue->rear = newNode;
+    }
+
+    queue->size++;
+}
+
+// Funcția pentru eliminarea și returnarea primului element din coadă
+int dequeue(Queue *queue)
+{
+    if (isEmpty(queue))
+    {
+        printf("Coada este goala. Nu se poate elimina niciun element.\n");
+        return -1;
+    }
+
+    Node *temp = queue->front;
+    int data = temp->data;
+
+    queue->front = queue->front->next;
+    free(temp);
+
+    if (queue->front == NULL)
+    {
+        queue->rear = NULL;
+    }
+
+    queue->size--;
+
+    return data;
+}
+
+// Funcția pentru a obține primul element din coadă fără a-l elimina
+int front(Queue *queue)
+{
+    if (isEmpty(queue))
+    {
+        printf("Coada este goala. Nu se poate accesa niciun element.\n");
+        return -1;
+    }
+
+    return queue->front->data;
+}
+
+// Funcția pentru a obține ultimul element din coadă fără a-l elimina
+int rear(Queue *queue)
+{
+    if (isEmpty(queue))
+    {
+        printf("Coada este goala. Nu se poate accesa niciun element.\n");
+        return -1;
+    }
+
+    return queue->rear->data;
+}
+
+// Funcția pentru a afișa conținutul cozii
+void displayQueue(Queue *queue)
+{
+    if (isEmpty(queue))
+    {
+        printf("Coada este goala. Nu se poate afisa niciun element.\n");
+        return;
+    }
+
+    Node *current = queue->front;
+    printf("Coada: ");
+
+    while (current != NULL)
+    {
+        printf("%d ", current->data);
+        current = current->next;
+    }
+
+    printf("\n");
+}
+
 // cu aceasta functe se transforma numarul in binar
 void tr_binar(unsigned int num, int n, int biti[], int *marime_biti)
 {
@@ -119,8 +255,16 @@ int main()
     int (*functii[5])(int *, int *) = {adunare, xor, interchimbare, rotire_st};
     int n, *biti, marime_biti, i, *nr1, *op, *nr2, j, *rez, operatii = 0, k;
     unsigned int m, rezultat;
+
+    // Inițializarea cozii
+    Queue *queue = createQueue(5);
+
+    printf("Introduceti numarul de operatii: ");
     scanf("%d", &n);
+    printf("Introduceti numarul pe care se aplica operatiile: ");
     scanf("%d", &m);
+    printf("Rezolvare:\n");
+
     // se aloca memorie pentru vectorul biti si nr1
     biti = (int *)malloc(sizeof(int) * 30);
     nr1 = (int *)malloc(sizeof(int) * 5);
@@ -160,6 +304,7 @@ int main()
             if (tr_b10(op, 2) == 0)
             {
                 rezultat = functii[0](nr1, nr2);
+                enqueue(queue, rezultat);
                 tr_binar(rezultat, 0, rez, &j);
                 for (k = 1; k <= 4; k++)
                     nr1[k] = rez[k];
@@ -169,6 +314,7 @@ int main()
             else if (tr_b10(op, 2) == 1)
             {
                 rezultat = functii[2](nr1, nr2);
+                enqueue(queue, rezultat);
                 tr_binar(rezultat, 0, rez, &j);
                 for (k = 1; k <= 4; k++)
                     nr1[k] = rez[k];
@@ -178,6 +324,7 @@ int main()
             else if (tr_b10(op, 2) == 2)
             {
                 rezultat = functii[3](nr1, nr2);
+                enqueue(queue, rezultat);
                 tr_binar(rezultat, 0, rez, &j);
                 for (k = 1; k <= 4; k++)
                     nr1[k] = rez[k];
@@ -187,21 +334,32 @@ int main()
             else if (tr_b10(op, 2) == 3)
             {
                 rezultat = functii[1](nr1, nr2);
+                enqueue(queue, rezultat);
                 tr_binar(rezultat, 0, rez, &j);
                 for (k = 1; k <= 4; k++)
                     nr1[k] = rez[k];
             }
         }
-        // rezultatul este transformat in baza 10 si apoi afisat
+
+        // se afiseaza rezultatele in ordinea efectuarii operatiilor
+        for (i = 0; i < n; i++)
+            printf("Rezultatul operatiei %d :%d\n", i + 1, dequeue(queue));
+        printf("\n");
+
+        // afisarea rezultatului final
         rezultat = tr_b10(nr1, 4);
-        printf("%d\n", rezultat);
+        printf("\nRezultatul final este: %d\n", rezultat);
+
         // se elibereaza memoria alocata pentru vectorii op, nr2 si rez
         free(op);
         free(nr2);
         free(rez);
     }
+
     // se elibereaza memoria alocata pentru vectorii biti si nr1
     free(biti);
     free(nr1);
+    free(queue);
+
     return 0;
 }
