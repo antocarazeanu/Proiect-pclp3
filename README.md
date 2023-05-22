@@ -1,7 +1,7 @@
 # Proiect-pclp3
 calculator pe biti
 
-    Am realizat o functie de creare a unui vector de biti in functie de un
+Am realizat o functie de creare a unui vector de biti in functie de un
 numar din baza 10 si o functie de transformare a unui vector de biti intr-un
 numar in baza 10. Apoi am creeat cele 4 functii(adunare, xor, interschimbare,
 rotatie la stanga), toate 4 avand ca antet 2 vectori reprezentand cele 2 numere
