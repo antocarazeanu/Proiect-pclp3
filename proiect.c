@@ -360,6 +360,5 @@ int main()
     free(biti);
     free(nr1);
     free(queue);
-
     return 0;
 }
